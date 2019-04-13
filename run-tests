@@ -1,12 +1,22 @@
 
 
-npx node-static -p 12300 tests/target-site &
+npx node-static -p 12300 tests/basic-target-site &
 P1=$!
 
-./bin/ablayer --url http://localhost:12300 --port 12301 tests/example-ablayer &
+./bin/ablayer --url http://localhost:12300 --port 12301 tests/basic-example-ablayer &
 P2=$!
 
-cypress run;
+PORT=12302 node tests/complex-server &
+P3=$!
+
+./bin/ablayer --url http://localhost:12302 --port 12303 tests/complex-ablayer &
+P4=$!
+
+#cypress run;
+cypress open -P .;
 
 kill $P1;
 kill $P2;
+kill $P3;
+kill $P4;
+#kill $P5;

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <body>
+
+        <div>
+            #marker:complex target index#
+        </div>
+
+        <button onclick="relativeApiCall()" id="btn-api-call-relative">Perform api call 1 (relative)</button>
+        <button onclick="fullUrlApiCall()" id="btn-api-call-fullurl">Perform api call 1 (full url)</button>
+
+        <button onclick="apiGetCookie()" id="btn-api-getcookie">getCookie</button>
+        <button onclick="apiSetCookie()" id="btn-api-setcookie">setCookie</button>
+        <button onclick="apiClearCookie()" id="btn-api-clearcookie">Clear cookie</button>
+
+        <button onclick="getApiCall2()" id="btn-api-call-2">Perform api call 2</button>
+
+
+        <button onclick="document.getElementById('log').innerHTML=''" id="reset-log">Reset log</button>
+
+        <pre id="log"></pre>
+
+        <script src="script1.js"></script>        
+        <script src="script2.js"></script>        
+    </body>
+</html>

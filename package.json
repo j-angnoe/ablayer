@@ -22,6 +22,7 @@
     "test": "bash run-tests"
   },
   "devDependencies": {
+    "cookie-parser": "^1.4.4",
     "node-static": "^0.7.11"
   }
 }
