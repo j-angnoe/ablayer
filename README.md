@@ -1,6 +1,5 @@
 # Ablayer
-This tool allows you to proxy an external site and mix
-in your overwrite external sources with local versions.
+This tool allows you to proxy an external site and overwrite external sources with local versions.
 
 Usecases:
 - Running experiments against a external applications.
