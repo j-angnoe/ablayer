@@ -125,7 +125,7 @@ function main(argv) {
 
             if (headers['set-cookie']) {
                 headers['set-cookie'] = headers['set-cookie'].map(cookie => {
-                    return cookie.replace(/;\s*domain=.+;?\s*/ig, ';').replace(/;secure;?/i, ';');
+                    return cookie.replace(/;\s*domain=.+;?\s*/ig, ';').replace(/;\s*secure\s*;?/i, ';');
                 });
             }
 
