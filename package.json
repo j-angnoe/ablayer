@@ -6,7 +6,7 @@
   "files": [
     "bin/"
   ],
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Start an AB-layer",
   "main": "index.js",
   "author": "Joshua Angnoe <joshua@fluxfx.nl>",
