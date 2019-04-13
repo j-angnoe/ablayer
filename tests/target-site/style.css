@@ -1,0 +1,15 @@
+body {
+    font-family: Sans;
+    font-size: 15px;
+    padding: 15px;
+}
+
+#style1:before {
+    content: 'style1 loaded';
+    display: block;
+}
+
+
+#style1 {
+    background: green;
+}

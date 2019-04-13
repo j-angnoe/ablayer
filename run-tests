@@ -1,0 +1,12 @@
+
+
+npx node-static -p 12300 tests/target-site &
+P1=$!
+
+./bin/ablayer --url http://localhost:12300 --port 12301 tests/example-ablayer &
+P2=$!
+
+cypress run;
+
+kill $P1;
+kill $P2;

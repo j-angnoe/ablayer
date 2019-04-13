@@ -1,0 +1,198 @@
+#!/usr/bin/env node
+
+var express = require('express');
+var path = require('path');
+var fs = require('fs');
+var yargs = require('yargs');
+var proxy = require('express-http-proxy');
+var url = require('url');
+var nocache = require('nocache');
+
+var app = express();
+
+app.use(nocache());
+
+var abtestFileExists = false;
+
+function periodicallyCheckABtestFile() {
+    if (fs.existsSync('abtest.js')) {
+        abtestFileExists = true;
+    } else {
+        setTimeout(periodicallyCheckABtestFile, 5000);
+    }
+}
+
+
+
+yargs.option('port', {
+    desc: 'Define which port to bind to.',
+    default: 9900
+});
+
+yargs.option('cors', {
+    desc: 'Allow all origins and headers',
+    default: false
+});
+
+yargs.option('url', {
+    desc: 'Specify the url to proxy',
+    default: 'http://localhost:9999'
+});
+
+var argv = yargs.argv;
+
+main(argv);
+
+/* We can be behind a number of proxies
+ * And we need to know the Original/Calling host.
+ */
+function getCallingHost(req) {
+    return url.format({
+        protocol: req.headers['x-forwarded-proto'] || req.protocol, 
+        host: req.headers['x-forwarded-for'] || req.get('host') // @fixme support x-forwarded-for
+    });        
+}
+
+function main(argv) {
+    var runFrom = argv._[0] || '.';
+    process.chdir(runFrom);
+
+    console.log('Running in ' + process.cwd());
+
+    periodicallyCheckABtestFile();
+
+    if (argv.cors) {
+        // Allow all CORS stuffs
+        // https://enable-cors.org/server_expressjs.html
+        app.use(function(req, res, next) {
+            // To allow CORS with credentials the Allowed Origin "*" won't do.
+            // So we repeat the calling host (i.e. the host you refer to when calling this)
+            res.header("Access-Control-Allow-Origin", getCallingHost());
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            next();
+        });
+    }
+
+    app.get('/abtest.js', (req, res) => {
+        res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        res.header('Expires', '-1');
+        res.header('Pragma', 'no-cache');
+        res.sendFile(path.join(process.cwd(), '/abtest.js'));
+    })
+    
+        
+    app.use('/', express.static(process.cwd()));
+
+    
+    app.use('/', proxy(argv.url, {
+        proxyReqOptDecorator(reqOpt, srcReq) {
+            // Prevent GZIP encoding, because we want to perform text
+            // substitutions later on.
+            reqOpt.headers['Accept-Encoding'] = '';            
+
+            reqOpt.headers['x-forwarded-for'] =  srcReq.headers['x-forwarded-for'] || srcReq.get('host') 
+
+            return reqOpt;
+        },
+
+        userResHeaderDecorator(headers, req, res, proxyReq) {
+            /* Rewrite the location headers, 
+             * replace proxy host with our calling host (CALLING_HOST)
+             */
+            if (headers['location']) {
+                var {location} = headers
+                
+                headers['location'] = replaceForeignHost(location, getCallingHost(req));
+                
+                if (url.parse(argv.url).protocol == 'http:') {
+                    if (url.parse(location).protocol == 'https:') {
+                        if (location != headers['location']) {
+
+                            res.send('Infinite http -> https loop detected. Please restart ablayer.');
+
+                            console.error('Infinite http -> https redirect loop detected.');
+                            console.error('From ' + argv.url + ' to ' + location);
+                            console.error('Please start ablayer with the https url.');
+                            process.exit(1);
+
+                            return;
+                        }
+                    }
+                }
+
+
+                if (headers['location'] == req.url) {
+                    process.exit('Infinite redirect loop: ' + req.url + ' -> ' + location);
+                }
+
+                // console.log('new location: ' + location + ' -> ' + headers['location']);
+            } 
+
+            return headers;
+        },
+
+        userResDecorator(res, data, req) {   
+            var isPlainText = /(text|application\/(javascript|json))/.test(res.headers['content-type']);
+
+            if (!isPlainText) {
+                return data;
+            }
+
+            var isHtml = /(text\/html)/.test(res.headers['content-type']);
+
+            if (!abtestFileExists) {
+                return data;
+            }
+
+            var content = data.toString();
+
+            if (isHtml && abtestFileExists) {
+                content = injectAblayerBanner(content);
+            }
+
+            if (isPlainText) {
+                content = replaceForeignHost(content, getCallingHost(req));
+            }
+
+            return content;
+        }
+    }));
+
+    app.listen(argv.port, function () {
+        console.log(`AB-layer against ${argv.url} started at ${argv.port}`)
+    });    
+}
+
+
+
+function replaceForeignHost(content, callingHost) {
+    var foreignHost = url.parse(argv.url).host;
+    return content.replace(new RegExp('(https?:)?//'+foreignHost,'g'), callingHost);
+}
+
+function injectAblayerBanner(content) {
+    var style = `
+    position:fixed;
+    background:#3F3;
+    top: 0;
+    right: 0;
+    z-index:100000;
+    padding: 5px;
+    color: black;
+    `.replace(/\n/g,'');
+    var indicator = `
+    document.addEventListener('DOMContentLoaded', function(event) {
+        var div=document.createElement('div');
+        var style = "${style}";
+        var viewSource = '<a href="/abtest.js">view source</a>';
+        div.innerHTML = '<div style="' + style + '">A/B test active ('+viewSource+')</div>';
+        document.body.appendChild(div);
+    });
+    `
+
+    if (~content.indexOf('</head>')) {
+        return content.replace('</head>', `<script>${indicator}</script><script src="/abtest.js"></script></head>`);
+    } else {
+        return content.replace('</body>', `<script>${indicator}</script><script src="/abtest.js"></script></body>`)
+    }
+}

@@ -1,0 +1,63 @@
+/**
+ * A simplistic `dark theme` for hackernews.
+ **/
+
+body {
+  font-family: Sans;
+  background: #333;
+  color: #ddd;
+}
+a {
+  color: #49f;
+}
+.itemlist td {
+  padding: 3px;
+  color: #ddd;
+}
+.itemlist .spacer {
+  height: 20px !important;
+}
+.athing {
+  font-size: 120%;
+}
+.subtext {
+  font-size: 90%;
+}
+.subtext a {
+  color: #666;
+}
+
+.comment {
+  background-color: #555;
+  margin: -5px;
+  padding: 5px;
+}
+.comment:before {
+  content: 'new';
+  display: inline-block;
+  background: yellow;
+  border-radius: 3px;
+  padding: 3px 5px;
+  font-size: 90%;
+  color: black;
+  width: 30px;
+}
+.comment.seen {
+  background-color: #333;
+}
+.comment.seen:before {
+    content: 'seen';
+    background: #555;
+    color: white;
+    width: 30px;
+}
+.comment.read {
+  background-color: #333;
+  
+}
+.comment.read:before {
+  content: 'read';
+  background: #557;
+  color: white;
+  width: 30px;
+}

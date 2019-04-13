@@ -1,0 +1,10 @@
+body {
+    font-family: Sans;
+    font-size: 15px;
+    padding: 15px;
+}
+
+#style2:before {
+    content: 'style2 target loaded';
+    display: block;
+}

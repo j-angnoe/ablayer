@@ -1,0 +1,9 @@
+
+#style2:before {
+    content: 'style2 ablayer loaded';
+    display: block;
+}
+
+#style2 {
+    background: red;
+}
