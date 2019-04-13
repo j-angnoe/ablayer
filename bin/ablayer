@@ -57,8 +57,6 @@ function main(argv) {
     var runFrom = argv._[0] || '.';
     process.chdir(runFrom);
 
-    console.log('Running in ' + process.cwd());
-
     periodicallyCheckABtestFile();
 
     if (argv.cors) {
@@ -163,6 +161,8 @@ function main(argv) {
 
     app.listen(argv.port, function () {
         console.log(`AB-layer against ${argv.url} started at ${argv.port}`)
+        console.log('Serving files from ' + process.cwd());
+        console.log('Hit Control + C to stop this server.');
     });    
 }
 
