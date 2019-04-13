@@ -65,7 +65,7 @@ function main(argv) {
         app.use(function(req, res, next) {
             // To allow CORS with credentials the Allowed Origin "*" won't do.
             // So we repeat the calling host (i.e. the host you refer to when calling this)
-            res.header("Access-Control-Allow-Origin", getCallingHost());
+            res.header("Access-Control-Allow-Origin", getCallingHost(req));
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             next();
         });
@@ -140,11 +140,6 @@ function main(argv) {
             }
 
             var isHtml = /(text\/html)/.test(res.headers['content-type']);
-
-            if (!abtestFileExists) {
-                return data;
-            }
-
             var content = data.toString();
 
             if (isHtml && abtestFileExists) {
