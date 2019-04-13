@@ -119,14 +119,17 @@ function main(argv) {
                         }
                     }
                 }
-
-
-                if (headers['location'] == req.url) {
-                    process.exit('Infinite redirect loop: ' + req.url + ' -> ' + location);
-                }
-
-                // console.log('new location: ' + location + ' -> ' + headers['location']);
             } 
+
+             /* Clear domain and secure headers per cookie.
+             * It is possible to rewrite the domain, but unsetting it is effective as well.
+             */
+
+            if (headers['set-cookie']) {
+                headers['set-cookie'] = headers['set-cookie'].map(cookie => {
+                    return cookie.replace(/;\s*domain=.+;?\s*/ig, ';').replace(/;secure;?/i, ';');
+                });
+            }
 
             return headers;
         },
