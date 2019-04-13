@@ -27,7 +27,7 @@ npm install -g ablayer
   feature to [Hackernews](https://news.ycombinator.com)
   
 <img src="https://raw.githubusercontent.com/j-angnoe/ablayer-hackernews-example/master/screenshot-frontpage.png" height="200" align="left">
-<img src="https://raw.githubusercontent.com/j-angnoe/ablayer-hackernews-example/master/screenshot-comments.png" height="200" align="left">
+<img src="https://raw.githubusercontent.com/j-angnoe/ablayer-hackernews-example/master/screenshot-comments.png" height="200">
 
 ## Features
 - Proxy http and https sites locally.
