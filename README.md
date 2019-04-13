@@ -10,6 +10,7 @@ Usecases:
   without the need of running the entire system locally.
 - Debugging and troubleshooting in production:
   Allows you to test your local (javascript) build against production.
+- Great for demonstrations and proof of concepts.
 
 ## Usage:
 ```
@@ -30,8 +31,11 @@ npm install -g ablayer
 <img src="https://raw.githubusercontent.com/j-angnoe/ablayer-hackernews-example/master/screenshot-comments.png" height="200" align="left">
 
 ## Features
-- Proxy http and https sites locally.
+- Proxy against http and https servers.
 - Serves files from the current directory
+    - abtest.js will be automatically injected in each html file that is served via ablayer.
+    - for each requested file ablayer will check if it exists locally, otherwise it
+      will proxy the request to the external server.
 - Will rewrite links so you stay on localhost.
 - Cookies are handled appropriately, so you can login via your localhost
   on the external system.
