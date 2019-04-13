@@ -24,13 +24,8 @@ npm install -g ablayer
   how ablayer can be used to try out a custom theme and add new/seen/read comments
   feature to [Hackernews](https://news.ycombinator.com)
   
-
-```
-
-
-
-
-```
+<img src="https://raw.githubusercontent.com/j-angnoe/ablayer-hackernews-example/master/screenshot-frontpage.png" width="200" align="left">
+<img src="https://raw.githubusercontent.com/j-angnoe/ablayer-hackernews-example/master/screenshot-comments.png" width="200" align="left">
 
 
 
