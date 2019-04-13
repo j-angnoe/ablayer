@@ -20,7 +20,7 @@ npm install -g ablayer
 ```
 
 ## An example:
-- Check out the [Hackernews example](/j-angnoe/ablayer-hackernews-example) to see
+- Check out the [Hackernews example](https://github.com/j-angnoe/ablayer-hackernews-example) to see
   how ablayer can be used to try out a custom theme and add new/seen/read comments
   feature to [Hackernews](https://news.ycombinator.com)
   
