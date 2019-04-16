@@ -20,6 +20,7 @@ ablayer --url https://some-site.com [--port 9900] [--cors]
 ```
 npm install -g ablayer
 ```
+- Tested with node 8, npm 5, on linux and MacOS.
 
 ## An example:
 - Check out the [Hackernews example](https://github.com/j-angnoe/ablayer-hackernews-example) to see
@@ -40,6 +41,8 @@ npm install -g ablayer
   on the external system.
 - Redirects will be rewritten, so you stay on localhost.
 
+## Bugs and feedback
+You may use github issues for bugs, feedback, feature requests [here](https://github.com/j-angnoe/ablayer/issues)
 
 
 
