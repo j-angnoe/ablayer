@@ -7,7 +7,7 @@ A combination proxy which allows you to combine your local sources against an ex
 We are going to provide this program as a terminal utility.
 
 ```js \
-bin/ablayer2
+bin/ablayer --chmod 0755
 #!/usr/bin/env node
 
 << # Javascript requirements >>
@@ -35,6 +35,10 @@ function main(argv) {
 
 // Start the program
 argv = yargs.argv;
+if (!argv.url) {
+    yargs.showHelp();
+    process.exit(1);
+}
 main(argv);
 
 ```
@@ -47,6 +51,9 @@ var fs = require('fs');
 
 var proxy = require('express-http-proxy');
 var url = require('url');
+
+var argv; // will be initiated later on.
+
 ```
 
 
@@ -59,8 +66,10 @@ We are going to use yargs for program options
 var yargs = require('yargs');
 ```
 
-```js \ 
+```js \
 << # Program options >>=
+yargs.usage(`Usage: $0 ---url=https://some.url [--port=9900]\nStart a ablayer against --url using sources from ${process.cwd()}`);
+
 yargs.option('port', {
     desc: 'Define which port to bind to.',
     default: 9900
@@ -68,7 +77,8 @@ yargs.option('port', {
 
 yargs.option('url', {
     desc: 'Specify the url to proxy',
-    default: 'http://localhost:9999'
+    required: true,
+    default: false
 });
 
 ```
@@ -78,7 +88,7 @@ yargs.option('url', {
 As we are probably developing, we want every request to be as fresh as possible. 
 
 ```js \
-<< # Requirements >>+=
+<< # Javascript requirements >>+=
 var nocache = require('nocache');
 ```
 
@@ -426,7 +436,7 @@ yargs.option('middleware', {
 ```
 
 
-```js \ 
+```js \
 << # Server initialisation >>+=
 
     if (argv.middleware) {
