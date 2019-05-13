@@ -13,7 +13,7 @@ P3=$!
 P4=$!
 
 #cypress run;
-cypress open -P .;
+cypress run -P .;
 
 kill $P1;
 kill $P2;
