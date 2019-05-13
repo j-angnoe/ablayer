@@ -39,6 +39,11 @@ yargs.option('url', {
     default: 'http://localhost:9999'
 });
 
+yargs.option('middleware', {
+    desc: 'Supply a middleware file',
+    default: false
+})
+
 var argv = yargs.argv;
 
 main(argv);
@@ -78,9 +83,26 @@ function main(argv) {
         res.sendFile(path.join(process.cwd(), '/abtest.js'));
     })
     
+    // Custom middleware:
+
+    if (argv.middleware) {
+        var middlewarePath = path.join(process.cwd(), argv.middleware);
+
+        console.log("Initialising custom middleware from: " + middlewarePath);
+        
+        try { 
+            var middleware = require(middlewarePath);
+
+            app.use((req, res, next) => {
+                middleware(req, res, next);
+            })
+        } catch (exception) {
+            console.error('Could not initialize middleware', exception);
+        }
+    } else {
+    }
         
     app.use('/', express.static(process.cwd()));
-
     
     app.use('/', proxy(argv.url, {
         proxyReqOptDecorator(reqOpt, srcReq) {
