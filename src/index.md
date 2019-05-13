@@ -83,23 +83,6 @@ yargs.option('url', {
 
 ```
 
-## Feature: Prevent caching
-
-As we are probably developing, we want every request to be as fresh as possible. 
-
-```js \
-<< # Javascript requirements >>+=
-var nocache = require('nocache');
-```
-
-```js \
-<< # Server initialisation >>+=
-
-app.use(nocache());
-
-```
-
-
 ## Serve static files from current working dir
 
 ```js \
@@ -342,6 +325,23 @@ another ablayer and redirect to there...
         }
     } 
 ```
+
+## Feature: Prevent caching
+
+As we are probably developing, we want every request to be as fresh as possible. 
+
+```js \
+<< # Javascript requirements >>+=
+var nocache = require('nocache');
+```
+
+```js \
+<< # Server initialisation >>+=
+
+app.use(nocache());
+
+```
+
 
 
 ## The CORS option
