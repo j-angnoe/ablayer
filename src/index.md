@@ -50,6 +50,8 @@ var path = require('path');
 var fs = require('fs');
 
 var proxy = require('express-http-proxy');
+    // https://github.com/villadora/express-http-proxy
+
 var url = require('url');
 
 var argv; // will be initiated later on.
@@ -59,7 +61,11 @@ var argv; // will be initiated later on.
 
 ## Program options
 
-We are going to use yargs for program options
+We are going to use yargs for program options,
+some documentation about yargs:
+
+https://github.com/yargs/yargs/blob/HEAD/docs/api.md
+
 
 ```js \
 << # Javascript requirements >>=
@@ -126,7 +132,8 @@ app.use('/', proxy(argv.url, {
     },
 
     userResDecorator(res, data, req) {   
-        var isPlainText = /(text|application\/(javascript|json))/.test(res.headers['content-type']);
+        var contentType = res.headers['content-type'];
+        var isPlainText = /(text|application\/(javascript|json))/.test(contentType);
 
         if (!isPlainText) {
             return data;
@@ -134,6 +141,8 @@ app.use('/', proxy(argv.url, {
 
         var isHtml = /(text\/html)/.test(res.headers['content-type']);
         var content = data.toString();
+
+        // Please note: Proxy response decorations are only for plaintext types.
 
         << # Proxy response decorations >> 
 
@@ -478,7 +487,122 @@ yargs.option('middleware', {
 
 
 
+## Auto open the browser with the url
 
+Add the --open option which automatically opens the target
+url in the browser. Cross platform open in browser isn't
+as straighforward as it seems. We've had good experiences
+with npm 'opn' package. 
 
+Docs: https://www.npmjs.com/package/opn
+
+An added benefit of using this option is that once you
+start the ablayer, it immediately is put to work by the 
+webbrowser, which is useful when doing small iterations
+in development on ablayer.
+
+```js \
+<< # Javascript requirements >>
+var opn = require('opn');
+```
+
+```js \
+<< # Program option >>+=
+yargs.option('open', {
+    desc: 'Launch webbrowser at given url',
+    default: false
+})
+```
+
+```js \
+<< # Server initialisation >>+=
+
+if (argv.open) {
+    var myUrl = 'http://localhost:' + (argv.port);
+    opn(myUrl);
+    console.log("Launching webbrowser at `%s`", myUrl);
+}
+```
+
+## Search in all sources of a page.
+
+How do you find a certain string in the current page 
+(including all the resources it has loaded). For example:
+I want to know which script defines some global, or which scripts
+use some global. I need to be able to perform a page+resources search. 
+
+```js \
+<< # Program options >>
+yargs.option('search', {
+    desc: 'Search for a needle inside responses, defaults to case insensitive search, use search-re for regex search',
+    default: false
+});
+yargs.option('search-re', {
+    desc: 'Search for a needle using a regular expression. This will be case insensitive, example: search-re="abc?de*"'
+});
+```
+
+```js \
+<< # Server initialisation >>
+var searchForNeedles = false;
+if (argv.search) {
+    searchForNeedles = new RegExp(argv.search, 'i');
+}
+
+if (argv.searchRe) {
+    try { 
+        searchForNeedles = new RegExp(argv.searchRe,'i');
+    } catch (error) {
+        console.error('Your search-re argument could not be interpretted as valid regular expression, use --search-re="blabla" for example');
+
+        process.exit(1);
+    }
+}
+```
+
+```js \
+<< # Proxy response decorations >> 
+
+if (argv.search) {
+    // Only search in plain text types.
+
+    if (isPlainText) {
+        if (searchForNeedles.test(content)) {
+            console.log("Found needle in url `%s` (%s)", req.path, res.headers['content-type'].split(/;/).shift());
+        }
+    }
+}
+```
+
+## Auto beautify option
+
+We want to be able to output javascripts beautified...
+
+2 methods:
+- beautify when we add ?beautify to the url
+- always beautify javascripts/css when given an option.. this 
+will take up more cpu.
+
+implement method 1:
+
+Docs: https://www.npmjs.com/package/js-beautify
+
+```js \
+<< # Proxy response decorations >>+=
+
+if (contentType.match('javascript')) {
+    var shouldBeautify = argv.beautify || req.query.beautify;
+
+    if (shouldBeautify) {
+        var jsBeautify = require('js-beautify').js;
+        content = jsBeautify(content);  
+    }
+}
+
+```
+
+## Further ideas and enhancements:
+
+Also compile ideas: [ideas](ideas.md);
 
 

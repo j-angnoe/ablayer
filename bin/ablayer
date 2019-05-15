@@ -5,12 +5,17 @@ var path = require('path');
 var fs = require('fs');
 
 var proxy = require('express-http-proxy');
+    // https://github.com/villadora/express-http-proxy
+
 var url = require('url');
 
 var argv; // will be initiated later on.
 
 var yargs = require('yargs');
+var opn = require('opn');
 var nocache = require('nocache');
+var mkdirp = require('mkdirp');
+    // docs: https://www.npmjs.com/package/mkdirp
 
 
 var abtestFileExists = false;
@@ -75,6 +80,37 @@ function replaceForeignHost(content, callingHost) {
         return require(module)
     }
 
+function saveContentAt(filePath, content) {
+    var savePath = path.join(process.cwd(), filePath);
+
+    // Auto append index.html to directories.
+    if (savePath.substr(-1) === "/") {
+        savePath += "index.html";
+    }
+
+    var saveDir = path.dirname(savePath);
+
+    return new Promise((resolve, reject) => {
+        mkdirp(saveDir, err => {
+            if (err) {
+                // The directory could not be created...
+                console.info('[saveContentAt] Could not create directory %s, (%s)', saveDir, error); 
+                // But attempt to write anyways.
+            }
+    
+            fs.writeFile(savePath, content, err => {
+                if (err) {
+                    console.error('[saveContentAt] Could not save file %s, (%s)', savePath, error);        
+                    return reject();
+                } else {
+                    console.log('Saved file `%s`', savePath);        
+                    return resolve();
+                }  
+            })
+        });
+    })
+}
+
 
 yargs.usage(`Usage: $0 ---url=https://some.url [--port=9900]\nStart a ablayer against --url using sources from ${process.cwd()}`);
 
@@ -89,6 +125,13 @@ yargs.option('url', {
     default: false
 });
 
+yargs.option('search', {
+    desc: 'Search for a needle inside responses, defaults to case insensitive search, use search-re for regex search',
+    default: false
+});
+yargs.option('search-re', {
+    desc: 'Search for a needle using a regular expression. This will be case insensitive, example: search-re="abc?de*"'
+});
 yargs.option('cors', {
     desc: 'Allow all origins and headers',
     default: false
@@ -99,6 +142,10 @@ yargs.option('middleware', {
     default: false
 })
 
+yargs.option('save', {
+    desc: 'Save all proxied files to disk',
+    default: false
+});
  
 
 function main(argv) {    
@@ -125,6 +172,20 @@ function main(argv) {
         res.sendFile(path.join(process.cwd(), '/abtest.js'));
     })
 
+var searchForNeedles = false;
+if (argv.search) {
+    searchForNeedles = new RegExp(argv.search, 'i');
+}
+
+if (argv.searchRe) {
+    try { 
+        searchForNeedles = new RegExp(argv.searchRe,'i');
+    } catch (error) {
+        console.error('Your search-re argument could not be interpretted as valid regular expression, use --search-re="blabla" for example');
+
+        process.exit(1);
+    }
+}
 
 app.use(nocache());
 
@@ -167,6 +228,12 @@ app.use(nocache());
             console.error('Could not initialize middleware', exception);
         }
     }
+
+if (argv.open) {
+    var myUrl = 'http://localhost:' + (argv.port);
+    opn(myUrl);
+    console.log("Launching webbrowser at `%s`", myUrl);
+}
 
 
     
@@ -232,7 +299,8 @@ app.use(nocache());
     },
 
     userResDecorator(res, data, req) {   
-        var isPlainText = /(text|application\/(javascript|json))/.test(res.headers['content-type']);
+        var contentType = res.headers['content-type'];
+        var isPlainText = /(text|application\/(javascript|json))/.test(contentType);
 
         if (!isPlainText) {
             return data;
@@ -241,12 +309,41 @@ app.use(nocache());
         var isHtml = /(text\/html)/.test(res.headers['content-type']);
         var content = data.toString();
 
-            if (isHtml && abtestFileExists) {
+        // Please note: Proxy response decorations are only for plaintext types.
+
+        
+if (argv.search) {
+    // Only search in plain text types.
+
+    if (isPlainText) {
+        if (searchForNeedles.test(content)) {
+            console.log("Found needle in url `%s` (%s)", req.path, res.headers['content-type'].split(/;/).shift());
+        }
+    }
+}
+    if (isHtml && abtestFileExists) {
         content = injectAblayerBanner(content);
     }
     if (isPlainText) {
         content = replaceForeignHost(content, getCallingHost(req));
     }
+
+if (contentType.match('javascript')) {
+    var shouldBeautify = argv.beautify || req.query.beautify;
+
+    if (shouldBeautify) {
+        var jsBeautify = require('js-beautify').js;
+        content = jsBeautify(content);  
+    }
+}
+
+if (req.query && req.query['ab:save']) {
+    saveContentAt(req.path, content);
+}
+
+if (argv.save) {
+    saveContentAt(req.path, content);
+}
  
 
         return content;
