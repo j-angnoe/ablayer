@@ -9,7 +9,14 @@ We are going to provide this program as a terminal utility.
 ```js \
 bin/ablayer --chmod 0755
 #!/usr/bin/env node
+require('source-map-support').install();
+require('./ablayer.js')
+```
 
+To make source maps work i've had to split bin/ablayer
+and bin/ablayer.js into two separate files..
+
+```js bin/ablayer.js
 << # Javascript requirements >>
 
 << # Javascript globals >>
@@ -33,6 +40,7 @@ function main(argv) {
     << # Start listening on port >>
 }
 
+
 // Start the program
 argv = yargs.argv;
 if (!argv.url) {
@@ -41,6 +49,8 @@ if (!argv.url) {
 }
 main(argv);
 
+
+// # sourceMappingURL=dynamic
 ```
 
 ```js \

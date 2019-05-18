@@ -17,7 +17,8 @@
     "mkdirp": "^0.5.1",
     "nocache": "^2.0.0",
     "opn": "^6.0.0",
-    "walkthrough-compiler": "0.0.2",
+    "source-map-support": "^0.5.12",
+    "walkthrough-compiler": "0.0.5",
     "yargs": "^12.0.2"
   },
   "optionalDependencies": {
@@ -25,7 +26,7 @@
   },
   "scripts": {
     "run-example": "./bin/ablayer --url https://news.ycombinator.com --port 9900 examples/hackernews-theme",
-    "compile": "wlkc src/index.md -o .",
+    "compile": "wlkc src/index.md -o . --sourcemaps",
     "test": "bash run-tests"
   },
   "devDependencies": {
