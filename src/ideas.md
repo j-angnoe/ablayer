@@ -105,6 +105,6 @@ if (argv.save) {
 }
 ```
 
-Please note that the funny mechanism here is:
+Please note that the     funny mechanism here is:
 Each (new) resource will be proxied only once. At second
 load it will be read from disk.

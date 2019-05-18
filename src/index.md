@@ -376,12 +376,36 @@ Implementation of these headers as an express middleware:
     if (argv.cors) {
         // Allow all CORS stuffs
         // https://enable-cors.org/server_expressjs.html
+
+        console.log("Ablayer: CORS is enabled.");
+
         app.use(function(req, res, next) {
             // To allow CORS with credentials the Allowed Origin "*" won't do.
             // So we repeat the calling host (i.e. the host you refer to when calling this)
-            res.header("Access-Control-Allow-Origin", getCallingHost(req));
-            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-            next();
+            console.log(req.headers);
+
+            var allowHost = getCallingHost(req);
+
+            var referer = req.headers['referer'] || false;
+            if (referer) {
+                var refererParsed = url.parse(referer);
+                referer = url.format({
+                    protocol: refererParsed.protocol,
+                    host: refererParsed.host
+                });
+
+                allowHost = referer;
+            }
+
+            res.header("access-control-allow-origin", allowHost);
+            res.header('access-control-allow-credentials', true);
+            res.header("access-control-allow-headers", "Origin, X-Requested-With, Content-Type, Accept");
+
+            if ('OPTIONS' == req.method) {
+               res.send(200);
+            } else {
+                next();
+            }
         });
     }
 ```
